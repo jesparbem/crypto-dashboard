@@ -20,6 +20,7 @@ export function createServer(engine: BotEngine, poller: CoinGeckoPoller) {
 
   app.get('/api/portfolio', (c) => c.json(engine.getPortfolioState()));
   app.get('/api/prices', (c) => c.json(poller.getLatestPrices()));
+  app.get('/api/market', (c) => c.json(poller.getMarketData()));
   app.get('/api/health', (c) => c.json({ ok: true, timestamp: Date.now() }));
 
   engine.on('signal',    (s) => broadcast({ type: 'signal',           payload: s }));
@@ -27,6 +28,7 @@ export function createServer(engine: BotEngine, poller: CoinGeckoPoller) {
   engine.on('portfolio', (p) => broadcast({ type: 'portfolio_update', payload: p }));
   poller.on('batch_done', () => {
     broadcast({ type: 'price_update',    payload: poller.getLatestPrices() });
+    broadcast({ type: 'market_update',   payload: poller.getMarketData() });
     broadcast({ type: 'portfolio_update', payload: engine.getPortfolioState() });
   });
 

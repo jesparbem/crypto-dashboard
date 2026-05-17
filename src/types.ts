@@ -12,6 +12,14 @@ export interface PricePoint {
   price: number;
 }
 
+export interface MarketData {
+  price: number;
+  marketCap: number;
+  volume24h: number;
+  change24h: number;
+  lastUpdated: number;
+}
+
 export interface StrategyResult {
   direction: SignalDirection;
   value: number;
@@ -67,6 +75,6 @@ export interface PortfolioState {
 }
 
 export interface WsMessage {
-  type: 'signal' | 'trade' | 'portfolio_update' | 'price_update';
+  type: 'signal' | 'trade' | 'portfolio_update' | 'price_update' | 'market_update';
   payload: unknown;
 }

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 
 export interface WsMessage {
-  type: 'signal' | 'trade' | 'portfolio_update' | 'price_update';
+  type: 'signal' | 'trade' | 'portfolio_update' | 'price_update' | 'market_update';
   payload: unknown;
 }
 

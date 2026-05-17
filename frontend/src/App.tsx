@@ -4,6 +4,7 @@ import { PortfolioHeader } from './components/PortfolioHeader.tsx';
 import { PriceChart } from './components/PriceChart.tsx';
 import { SignalsTable } from './components/SignalsTable.tsx';
 import { StrategyComparison } from './components/StrategyComparison.tsx';
+import { MarketTable } from './components/MarketTable.tsx';
 
 interface StrategyStats { wins: number; losses: number; totalPnl: number; avgGain: number; avgLoss: number; }
 interface PortfolioState {
@@ -16,6 +17,10 @@ interface Signal {
   crypto: { symbol: string; name: string };
   strategy: string; direction: 'BUY' | 'SELL';
   price: number; kellyFraction: number; timestamp: number;
+}
+interface MarketData {
+  price: number; marketCap: number; volume24h: number;
+  change24h: number; lastUpdated: number;
 }
 
 const DEFAULT: PortfolioState = {
@@ -32,17 +37,20 @@ export default function App() {
   const { connected, lastMessage } = useWebSocket('ws://localhost:5173/ws');
   const [portfolio, setPortfolio] = useState<PortfolioState>(DEFAULT);
   const [prices, setPrices] = useState<Record<string, number>>({});
+  const [market, setMarket] = useState<Record<string, MarketData>>({});
   const [signals, setSignals] = useState<Signal[]>([]);
 
   useEffect(() => {
     fetch('/api/portfolio').then(r => r.json()).then(setPortfolio).catch(() => {});
     fetch('/api/prices').then(r => r.json()).then(setPrices).catch(() => {});
+    fetch('/api/market').then(r => r.json()).then(setMarket).catch(() => {});
   }, []);
 
   useEffect(() => {
     if (!lastMessage) return;
     if (lastMessage.type === 'portfolio_update') setPortfolio(lastMessage.payload as PortfolioState);
     else if (lastMessage.type === 'price_update') setPrices(lastMessage.payload as Record<string, number>);
+    else if (lastMessage.type === 'market_update') setMarket(lastMessage.payload as Record<string, MarketData>);
     else if (lastMessage.type === 'signal') setSignals(prev => [lastMessage.payload as Signal, ...prev].slice(0, 50));
   }, [lastMessage]);
 
@@ -57,6 +65,7 @@ export default function App() {
         tradeCount={portfolio.recentTrades.length}
         connected={connected}
       />
+      <MarketTable market={market} />
       <PriceChart prices={prices} />
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
         <SignalsTable signals={signals} />
